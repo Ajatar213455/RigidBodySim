@@ -163,6 +163,7 @@ public:
 			m_trackmouse.y = m_oldtrackmouse.y;
 		}
 		if (m_iSysCase == 3) {
+			// return;
 			// Apply the mouse deltas to g_vfMovableObjectPos (move along cameras view plane)
 			Point2D mouseDiff;
 			mouseDiff.x = m_trackmouse.x - m_oldtrackmouse.x;
@@ -204,6 +205,10 @@ public:
 	}
 
 	void CollisionHandling() {
+		static Vec3 adjLin_v[10], adjAng_v[10];
+		for (int i = 0; i < getNumberOfRigidBodies(); i++)
+			adjLin_v[i] = Vec3(0.0, 0.0, 0.0), adjAng_v[i] = Vec3(0.0, 0.0, 0.0);
+
 		for (int i = 0; i < getNumberOfRigidBodies(); i++)
 			for (int j = 0; j < getNumberOfRigidBodies(); j++) if (i!=j) {
 				// get the object 2 world matrix of A
@@ -226,10 +231,15 @@ public:
 					Mat4 R = RBodyRot[j].getRotMat();
 					Mat4 T = Mat4(); T.initTranslation(RBodyPos[j][0], RBodyPos[j][1], RBodyPos[j][2]);
 					Vec3 r = R.inverse().transformVector(T.inverse().transformVector(pPos));
-					Vec3 worldVel = RBodyLin_v[j] + cross(RBodyAng_v[j], R.transformVector(r));
+					Mat4 R_i = RBodyRot[i].getRotMat();
+					Mat4 T_i = Mat4(); T_i.initTranslation(RBodyPos[i][0], RBodyPos[i][1], RBodyPos[i][2]);
+					Vec3 r_i = R_i.inverse().transformVector(T_i.inverse().transformVector(pPos));
+					Vec3 worldVel_j = RBodyLin_v[j] + cross(RBodyAng_v[j], R.transformVector(r));
+					Vec3 worldVel_i = RBodyLin_v[i] + cross(RBodyAng_v[i], R_i.transformVector(r_i));
+					Vec3 worldVel = worldVel_j - worldVel_i;
 					//cout << i << " " << j << " " << worldVel << " " << n << endl;
 					if (dot(worldVel, n) < 0) {
-						Real mu_T = 0.4, mu_N = 0.7;
+						Real mu_T = 0.4, mu_N = 0.5;
 						Vec3 worldVel_N = dot(worldVel, n) * n;
 						Vec3 worldVel_T = worldVel - worldVel_N;
 						Real alpha = max(1 - mu_T * (1 + mu_N) * norm(worldVel_N) / norm(worldVel_T), 0.0);
@@ -240,17 +250,19 @@ public:
 
 						Mat4 Id = Mat4(0.0); Id.initId();
 						Mat4 crossPdMat = getCrossPdMat(R.transformVector(r));
-						Mat4 K = Id * 1.0 / RBodyMass[i] - crossPdMat * getInertiaMatInv(i) * crossPdMat;
-						Vec3 Impulse = K.inverse().transformVector(worldVel_new - worldVel);
+						Mat4 K = Id * 1.0 / RBodyMass[j] - crossPdMat * getInertiaMatInv(j) * crossPdMat;
+						Vec3 Imp = K.inverse().transformVector(worldVel_new - worldVel);
 
-						//applyForceOnBody(j, pPos, Impulse);
-						RBodyLin_v[j] += 1.0 / RBodyMass[i] * Impulse;
-						RBodyAng_v[j] += getInertiaMatInv(i).transformVector(cross(R.transformVector(r[i]), Impulse));
-						//cout << j << " " << pPos << " " << Impulse << endl;
+						adjLin_v[j] += 1.0 / RBodyMass[j] * Imp;
+						adjAng_v[j] += getInertiaMatInv(j).transformVector(cross(R.transformVector(r), Imp));
 					}
 					//cout << "========================" << endl;
 				}
 			}
+		for (int i = 0; i < getNumberOfRigidBodies(); i++) {
+			RBodyLin_v[i] += adjLin_v[i];
+			RBodyAng_v[i] += adjAng_v[i];
+		}
 	}
 
 	Mat4 getInertiaMatInv(int i) {

@@ -247,6 +247,7 @@ void CALLBACK OnFrameMove( double dTime, float fElapsedTime, void* pUserContext 
 {
 	UpdateWindowTitle(L"Demo");
 	g_pDUC->update(fElapsedTime);
+//	cout << g_iTestCase << endl;
 	if (g_iPreTestCase != g_iTestCase || g_iPreSysCase != g_iSysCase){// test case changed
 		// clear old setup and build up new setup
 		if(g_pDUC->g_pTweakBar != nullptr) {

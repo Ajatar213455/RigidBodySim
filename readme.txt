@@ -10,3 +10,7 @@ system mode:
  - TwoBox-Demo3:
 	- 完成了Demo3的任务，可以自行设置仿真步长进行仿真。
 	- 可以通过鼠标的拖拽给两个刚体施加朝向彼此的力。
+ - Complex-Demo4:
+	- 构建了被四面墙包围的正方体的scene。
+	- 可以通过鼠标的拖拽给正方体施加力，使得正方体与墙体碰撞。
+	- 由于collision detection的一些bug，导致有时候正方体会穿过墙体。

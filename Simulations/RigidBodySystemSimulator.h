@@ -42,6 +42,18 @@ public:
 			setOrientationOf(0, Quat((float)(M_PI) * -0.3f, (float)(M_PI) * 0.1f, (float)(M_PI) * -0.8f));
 			applyForceOnBody(1, RBodyPos[1], Vec3(-2., 0., 0));
 		}
+		else if (m_iSysCase == 4) {
+			float len = 3.4;
+			float heavy = 0.4;
+			addRigidBody(Vec3(0, 0, 0), Vec3(0.5, 0.5, 0.5), 2.0);
+			setOrientationOf(0, Quat((float)(M_PI) * 0.3f, (float)(M_PI) * 0.4f, (float)(M_PI) * 0.5f));
+			applyForceOnBody(0, RBodyPos[0], Vec3(7., 0., 0));
+
+			addRigidBody(Vec3(2, 0, 0), Vec3(heavy, len, len), 2.0, 1);
+			addRigidBody(Vec3(-2, 0, 0), Vec3(heavy, len, len), 2.0, 1);
+			addRigidBody(Vec3(0, 0, 2), Vec3(len, len, heavy), 2.0, 1);
+			addRigidBody(Vec3(0, 0, -2), Vec3(len, len, heavy), 2.0, 1);
+		}
 	}
 	
 	// Functions
@@ -137,13 +149,13 @@ public:
 	}
 	void externalForcesCalculations(float timeElapsed) {
 		Vec3 Gravity = Vec3(0., -9.8, 0.);
-		if (m_iSysCase == 4) {
+		if (m_iSysCase == 5) {
 			for (int i = 0; i < getNumberOfRigidBodies(); i++) {
 				applyForceOnBody(i, RBodyPos[i], Gravity);
 			}
 		}
 		
-		if (m_iSysCase == 2) {
+		if (m_iSysCase == 2 || m_iSysCase == 4) {
 			// Apply the mouse deltas to g_vfMovableObjectPos (move along cameras view plane)
 			Point2D mouseDiff;
 			mouseDiff.x = m_trackmouse.x - m_oldtrackmouse.x;
@@ -156,6 +168,7 @@ public:
 				Vec3 inputWorld = worldViewInv.transformVectorNormal(inputView);
 				// find a proper scale!
 				float inputScale = 0.00001f;
+				if (m_iSysCase == 4) inputScale *= 60;
 				inputWorld = inputWorld * inputScale;
 				applyForceOnBody(0, RBodyPos[0], inputWorld);
 			}
@@ -280,19 +293,21 @@ public:
 		for (int i = 0; i < getNumberOfRigidBodies(); i++) {
 			RBodyF[i].calc();
 			
-			// Translational Motion
-			RBodyPos[i] += h * RBodyLin_v[i];
-			RBodyLin_v[i] += h / RBodyMass[i] * RBodyF[i].sumF;
+			if (!RBodyFix[i]) {
+				// Translational Motion
+				RBodyPos[i] += h * RBodyLin_v[i];
+				RBodyLin_v[i] += h / RBodyMass[i] * RBodyF[i].sumF;
 
-			// Rotational Motion
-			RBodyRot[i] += h / 2 * Quat(RBodyAng_v[i][0], RBodyAng_v[i][1], RBodyAng_v[i][2], 0) * RBodyRot[i];
-			RBodyRot[i] = RBodyRot[i].unit();
+				// Rotational Motion
+				RBodyRot[i] += h / 2 * Quat(RBodyAng_v[i][0], RBodyAng_v[i][1], RBodyAng_v[i][2], 0) * RBodyRot[i];
+				RBodyRot[i] = RBodyRot[i].unit();
 
-			Mat4 Inertia_Mat_inv = getInertiaMatInv(i);
+				Mat4 Inertia_Mat_inv = getInertiaMatInv(i);
 
-//			RBodyAng_v[i] += Inertia_Mat_inv * RBodyF[i].sumTau * h;
-//			cout << RBodyF[i].sumTau << endl;
-			RBodyAng_v[i] += Inertia_Mat_inv.transformVector(RBodyF[i].sumTau) * h;
+				//			RBodyAng_v[i] += Inertia_Mat_inv * RBodyF[i].sumTau * h;
+				//			cout << RBodyF[i].sumTau << endl;
+				RBodyAng_v[i] += Inertia_Mat_inv.transformVector(RBodyF[i].sumTau) * h;
+			}
 
 			if (log) {
 				cout << "Pos = " << RBodyPos[i] << endl;

@@ -1,13 +1,6 @@
-Demo1:
-- 当GUI中的Timestep为0.1，System mode为Simple，Text Scene为Eular或MidPoint时运行程序，命令行会输出Demo1所设置的系统的运动学信息。
+通过切换不同的system mode来显示不同demo的结果：
 
-Demo2,3:
-- 按要求完成了Demo2,3
-
-Demo4:
-- 系统为四角固定的一块二维布料。Demo4对其在重力与地面作用下的行为进行仿真。
-- 为了让系统更为稳定，添加了阻尼力
-- 利用penalty-based的方法建模地面对布料的支持力。
-
-Demo5:
-- 未实现
+system mode:
+ - Test: 没有渲染，仅用于SimulationsTestor。
+ - OneBox-Demo1： 完成了Demo1的任务。仿真步长设定为2，不可更改，命令行中会输出Table中设置的计算结果，仅看第一个结果即可。
+ - OneBox-Demo2： 完成了Demo2的任务，可以自行设置仿真步长进行仿真。

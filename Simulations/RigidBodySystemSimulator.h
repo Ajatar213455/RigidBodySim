@@ -38,7 +38,7 @@ public:
 		return "Eular";
 	}
 	const char* getSysCasesStr() {
-		return "Test, One, Two, Complex";
+		return "Test, OneBox-Demo1, OneBox-Demo2, TwoBox-Demo3, Complex-Demo4";
 	}
 	void initUI(DrawingUtilitiesClass* DUC) {
 		this->DUC = DUC;

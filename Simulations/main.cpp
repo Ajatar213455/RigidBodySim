@@ -40,7 +40,7 @@ using namespace GamePhysics;
 
 DrawingUtilitiesClass * g_pDUC;
 Simulator * g_pSimulator;
-float 	g_fTimestep = 0.005;
+float 	g_fTimestep = 0.01;
 #ifdef ADAPTIVESTEP
 float   g_fTimeFactor = 1;
 #endif
@@ -255,10 +255,8 @@ void CALLBACK OnFrameMove( double dTime, float fElapsedTime, void* pUserContext 
 			g_pDUC->g_pTweakBar = nullptr;
 		}
 		initTweakBar();
-		if (g_iPreTestCase != g_iTestCase)
-			g_pSimulator->notifyCaseChanged(g_iTestCase);
-		if (g_iPreSysCase != g_iSysCase)
-			g_pSimulator->notifySysCaseChanged(g_iSysCase);
+		g_pSimulator->notifyCaseChanged(g_iTestCase);
+		g_pSimulator->notifySysCaseChanged(g_iSysCase);
 		g_pSimulator->initUI(g_pDUC);
 		g_iPreTestCase = g_iTestCase;
 		g_iPreSysCase = g_iSysCase;
